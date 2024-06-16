@@ -17,10 +17,12 @@ def select_from_list(lst):
   option = input(f"select option number:   ")
   return lst1[option] if option in lst1 else None
 
-
 def find_input_cities_gcdata(city_input):
   all_cities_cache = gc.GeonamesCache().get_cities()
-  input_cities_gcdata = [value for key, value in all_cities_cache.items() if (city_input.lower().title() == value['name'] or city_input in value['alternatenames'] or city_input.lower().title() in value['alternatenames'])]
+  input_cities_gcdata = []
+  for key, value in all_cities_cache.items():
+      if (city_input.lower().title() == value['name'] or city_input in value['alternatenames'] or city_input.lower().title() in value['alternatenames']):
+        input_cities_gcdata.append(value)
   return input_cities_gcdata
 
 
@@ -193,23 +195,38 @@ def get_and_display_data(settings):
   city_owdata = get_current_owdata(settings)
   display_current_owdata(city_owdata, settings)
 
+
 # --------------------------
 # Main
 # --------------------------
 
 initial_settings = [['Jerusalem', 'Asia/Jerusalem', 'metric'], ['London', 'Europe/London', 'metric'], ['New York City', 'America/New_York', 'metric']]
 initial_list = [item[0] for item in initial_settings]
+initial_list.insert(0, 'Other')
 city_input = st.selectbox("Select a City:", initial_list)
+
+if city_input == initial_list[0]:
+    city_input = st.text_input('Type City')
+
 temp_input = st.selectbox("Select Temperature Units:", ['Kelvin', 'Celsius', 'Fahrenheit'])
 temp_units = 'standard' if (temp_input == 'Kelvin') else ('metric' if (temp_input == 'Celsius') else 'imperial')
+
+display_local_current_datetime(get_local_current_datetime())
+
+# setting_inputs = set_up(city_input, temp_units, initial_list)
 
 favorites = load_favorite_settings()
 if favorites != []:
   initial_settings = favorites
 
-new_settings = set_up(city_input, temp_units, initial_list)
+
 if st.button('Fetch'):
-  get_and_display_data(new_settings)
+    new_settings = set_up(city_input, temp_units, initial_list)
+    city_ow_data = get_current_owdata(new_settings)
+    display_current_owdata(city_ow_data, new_settings)
+    city_current_datetime = get_city_current_datetime(new_settings)
+    display_city_current_datetime(new_settings, city_current_datetime)
+
 
 if st.button('Set settings as default'):
   set_settings_as_default(new_settings)
