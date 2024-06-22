@@ -1,5 +1,17 @@
 import streamlit as st
 
+def set_value(key, value):
+    st.session_state[key] = value
+
+
+def get_value(key):
+    if key not in st.session_state:
+        return None
+    else:
+        return st.session_state[key]
+
+print('Hello World!')
+
 # Display Title
 st.markdown('# Current Weather App')
 
@@ -37,6 +49,9 @@ typed_input = st.text_input('City Name:') if selected_city == 'Other' else None
 
 # Initialize input_settings
 input_settings = []
+if get_value('input_settings'):
+    input_settings = get_value('input_settings')
+
 
 # Determine initial temperature selection
 if selected_city != 'Other':
@@ -59,6 +74,10 @@ input_string = selected_city == 'Other' and typed_input != ''
 # Display fetch button
 fetch_button = st.button('Fetch')
 
+
+
+print(get_value('input_settings'))
+
 # Process fetch button
 if fetch_button:
 
@@ -70,15 +89,19 @@ if fetch_button:
 
     elif input_string:
         # Simulate fetching input settings based on typed input
+        set_value('input_settings', ['name', 'tz'])
         input_settings = ['name', 'tz']
 
         if not input_settings:
             st.markdown(f'Sorry... there is no weather data for `{typed_input}`')
+
         else:
             selection_settings = input_settings
             st.write(f"fetch_selection({selection_settings[0]}, {selection_settings[1]}, {selected_temp}) --> 'ow_data'")
 
 # Display set_as_default button
+# print(selected_not_default, input_string, input_settings)
+
 if selected_not_default or (input_string and input_settings):
     set_as_default_button = st.button('Set as Default')
 
@@ -87,7 +110,7 @@ if selected_not_default or (input_string and input_settings):
         if input_string and not input_settings:
             st.markdown(f'Sorry... there is no weather data for `{typed_input}`')
         else:
-            st.write(f"set_as_default({selection_settings[0]}, {selection_settings[1]}, {selected_temp})")
+            st.write(f"set_as_default({input_settings[0]}, {input_settings[1]}, {selected_temp})")
 
 # Display save_settings button
 cond_s1 = (selected_default or selected_not_default) and changed_default_temp
